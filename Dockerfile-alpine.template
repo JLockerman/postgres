@@ -89,8 +89,8 @@ RUN set -ex \
 		--enable-integer-datetimes \
 		--enable-thread-safety \
 		--enable-tap-tests \
-# skip debugging info -- we want tiny size instead
-#		--enable-debug \
+# unlike the official version, enable debug info, we're only using this for CI
+		--enable-debug \
 		--disable-rpath \
 		%%UUID_CONFIG_FLAG%% \
 		--with-gnu-ld \
@@ -112,9 +112,10 @@ RUN set -ex \
 		--with-libxml \
 		--with-libxslt \
 		--with-icu \
-	&& make -j "$(nproc)" world \
-	&& make install-world \
-	&& make -C contrib install \
+# we enable EXEC_BACKEND to test windows behavior
+	&& make -DEXEC_BACKEND=1 -j "$(nproc)" world \
+	&& make -DEXEC_BACKEND=1 install-world \
+	&& make -DEXEC_BACKEND=1 -C contrib install \
 	\
 	&& runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \

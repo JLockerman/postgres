@@ -107,14 +107,14 @@ RUN set -ex \
 	&& wget -O config/config.sub 'https://git.savannah.gnu.org/cgit/config.git/plain/config.sub?id=7d3d27baf8107b630586c962c057e22149653deb' \
 # configure options taken from:
 # https://anonscm.debian.org/cgit/pkg-postgresql/postgresql.git/tree/debian/rules?h=9.5
-	&& ./configure \
+	&& CPPFLAGS="-DEXEC_BACKEND=1 $CPPFLAGS" ./configure \
 		--build="$gnuArch" \
 # "/usr/src/postgresql/src/backend/access/common/tupconvert.c:105: undefined reference to `libintl_gettext'"
 #		--enable-nls \
 		--enable-integer-datetimes \
 		--enable-thread-safety \
-# skip debugging info -- we want tiny size instead
-#		--enable-debug \
+# unlike the official version, enable debug info, we're only using this for CI
+		--enable-debug \
 		--disable-rpath \
 		--with-ossp-uuid \
 		--with-gnu-ld \
@@ -135,6 +135,7 @@ RUN set -ex \
 		--with-openssl \
 		--with-libxml \
 		--with-libxslt \
+# we enable EXEC_BACKEND to test windows behavior
 	&& make -j "$(nproc)" world \
 	&& make install-world \
 	&& make -C contrib install \
